@@ -1608,7 +1608,7 @@ let conversationHistory = [];    // last N messages sent to OpenAI
    LOCAL TESTING  → USE_PROXY = false  (key stored in browser)
    PRODUCTION     → USE_PROXY = true   (key lives in api.php on server)
    ──────────────────────────────────────────────────────────── */
-const USE_PROXY   = false;
+const USE_PROXY   = true;
 const AI_ENDPOINT = USE_PROXY
     ? "./api.php"
     : "https://api.groq.com/openai/v1/chat/completions";

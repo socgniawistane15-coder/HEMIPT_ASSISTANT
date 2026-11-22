@@ -64,7 +64,10 @@ if (!empty($rl) && (time() - ($rl['t'] ?? 0)) < RATE_WINDOW) {
 file_put_contents($rl_file, json_encode($rl), LOCK_EX);
 
 // ── Load API key from config above web root ────────────────────────────────
-$config = dirname($_SERVER['DOCUMENT_ROOT']) . '/hemipt_config.php';
+// Works for both main domain (/public_html) and subdomains (/public_html/assistant)
+// by stripping everything from 'public_html' onwards to find the home directory.
+$homeDir = preg_replace('/\/public_html.*$/', '', $_SERVER['DOCUMENT_ROOT']);
+$config  = $homeDir . '/hemipt_config.php';
 if (!file_exists($config)) {
     http_response_code(500);
     echo json_encode(['error' => 'Server configuration not found.']);
@@ -103,7 +106,7 @@ $messages = array_map(function ($m) {
 
 // ── Forward to OpenAI ──────────────────────────────────────────────────────
 $payload = json_encode([
-    'model'       => 'gpt-4o-mini',
+    'model'       => 'openai/gpt-oss-20b',
     'messages'    => $messages,
     'max_tokens'  => 600,
     'temperature' => 0.7,
