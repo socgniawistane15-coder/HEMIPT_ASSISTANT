@@ -1,153 +1,162 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#087c45">
-  <title>HEMIPT Assistant | Student Guide</title>
-  <link rel="stylesheet" href="style.css">
-  <link rel="icon" type="image/jpg" href="b.jpg">
-</head>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#087c45" />
+    <title>HEMIPT Assistant | Student Guide</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="icon" type="image/jpg" href="b.jpg" />
+  </head>
 
-<body>
-  <header class="navbar">
-    <a href="#" class="brand">
-        <img src="a.jpg" alt="Hemipt logo" class="brand-logo">
-      <span>
-        <strong>HEMIPT</strong>
-        <small>University Institute</small>
-      </span>
-    </a>
+  <body>
+    <header class="navbar">
+      <a href="#" class="brand">
+        <img src="a.jpg" alt="Hemipt logo" class="brand-logo" />
+        <span>
+          <strong>HEMIPT</strong>
+          <small>University Institute</small>
+        </span>
+      </a>
 
-    <select id="language" aria-label="Choose language">
-      <option value="en">English</option>
-      <option value="fr">Français</option>
-    </select>
-  </header>
+      <select id="language" aria-label="Choose language">
+        <option value="en">English</option>
+        <option value="fr">Français</option>
+      </select>
+    </header>
 
-  <main class="container">
-    <section class="welcome">
-      <span class="eyebrow" id="eyebrow">YOUR STUDENT GUIDE</span>
-      <h1 id="welcome-title">
-        Welcome to HEMIPT Assistant
-      </h1>
+    <main class="container">
+      <section class="welcome">
+        <span class="eyebrow" id="eyebrow">YOUR STUDENT GUIDE</span>
+        <h1 id="welcome-title">Welcome to HEMIPT Assistant</h1>
 
-      <p id="welcome-text">
-        Your friendly guide to programs, registration,
-        school fees and campus information.
-      </p>
+        <p id="welcome-text">
+          Your friendly guide to programs, registration, school fees and campus
+          information.
+        </p>
 
-      <div class="topics" id="topics"></div>
+        <div class="topics" id="topics"></div>
 
-      <div class="info-note" id="info-note">
-        For official confirmation of fees and admission
-        requirements, contact the school administration.
-      </div>
-    </section>
+        <div class="info-note" id="info-note">
+          For official confirmation of fees and admission requirements, contact
+          the school administration.
+        </div>
+      </section>
 
-    <section class="chat-card">
-      <div class="chat-header">
-        <div class="bot-avatar">
-            <img src="a.jpg" alt="chatbot-logo" class="bot-logo">
+      <section class="chat-card">
+        <div class="chat-header">
+          <div class="bot-avatar">
+            <img src="a.jpg" alt="chatbot-logo" class="bot-logo" />
+          </div>
+
+          <div>
+            <h2 id="chat-title">HEMIPT Assistant</h2>
+            <p>
+              <span class="online-dot"></span>
+              <span id="status-text">Ready to help</span>
+            </p>
+          </div>
+
+          <button
+            id="clear-chat"
+            class="clear-button"
+            type="button"
+            title="Clear conversation"
+            aria-label="Clear conversation"
+          >
+            ↻
+          </button>
         </div>
 
-        <div>
-          <h2 id="chat-title">HEMIPT Assistant</h2>
-          <p>
-            <span class="online-dot"></span>
-            <span id="status-text">Ready to help</span>
-          </p>
+        <div
+          id="chat-messages"
+          class="chat-messages"
+          role="log"
+          aria-live="polite"
+        ></div>
+
+        <div class="suggestion-area">
+          <p id="suggestion-label">Try asking:</p>
+          <div id="quick-questions" class="quick-questions"></div>
         </div>
 
-        <button id="clear-chat" class="clear-button" type="button"
-          title="Clear conversation" aria-label="Clear conversation">
-          ↻
-        </button>
-      </div>
+        <form id="chat-form" class="chat-input-area">
+          <input
+            type="text"
+            id="user-input"
+            placeholder="Type your question..."
+            autocomplete="off"
+            aria-label="Type your question"
+            required
+          />
+          <button id="send-button" type="submit">Send ➤</button>
+        </form>
 
-      <div id="chat-messages" class="chat-messages"
-        role="log" aria-live="polite">
-      </div>
+        <p class="chat-footer" id="chat-footer">
+          HEMIPT Student Information Assistant
+        </p>
+      </section>
+    </main>
+    <section class="hemipt-contact">
+      <h2>Contact HEMIPT</h2>
+      <p class="contact-intro">Connect with HEMIPT University Institute.</p>
 
-      <div class="suggestion-area">
-        <p id="suggestion-label">Try asking:</p>
-        <div id="quick-questions" class="quick-questions"></div>
-      </div>
-
-      <form id="chat-form" class="chat-input-area">
-        <input
-          type="text"
-          id="user-input"
-          placeholder="Type your question..."
-          autocomplete="off"
-          aria-label="Type your question"
-          required
-        >
-        <button id="send-button" type="submit">
-          Send ➤
-        </button>
-      </form>
-
-      <p class="chat-footer" id="chat-footer">
-        HEMIPT Student Information Assistant
-      </p>
-    </section>
-  </main>
-  <section class="hemipt-contact">
-    <h2>Contact HEMIPT</h2>
-    <p class="contact-intro">Connect with HEMIPT University Institute.</p>
-
-    <div class="contact-grid">
-
+      <div class="contact-grid">
         <!-- Website -->
         <div class="contact-item">
-            <div class="contact-icon">🌐</div>
-            <div>
-                <h3>Website</h3>
-                <p>hemiptuniversity.com</p>
-            </div>
+          <div class="contact-icon">🌐</div>
+          <div>
+            <h3>Website</h3>
+            <a
+              href="https://hemiptuniversity.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              >hemiptuniversity.com</a
+            >
+          </div>
         </div>
 
         <!-- Email -->
         <div class="contact-item">
-            <div class="contact-icon">✉️</div>
-            <div>
-                <h3>Email</h3>
-                <p>hemiptuniversitygmail.com</p>
-            </div>
+          <div class="contact-icon">✉️</div>
+          <div>
+            <h3>Email</h3>
+            <a href="mailto:info@hemiptuniversity.com"
+              >info@hemiptuniversity.com</a
+            >
+          </div>
         </div>
 
         <!-- Facebook -->
         <div class="contact-item">
-            <div class="contact-icon">📘</div>
-            <div>
-                <h3>Facebook</h3>
-                <p>Hemipt University Institude</p>
-            </div>
+          <div class="contact-icon">📘</div>
+          <div>
+            <h3>Facebook</h3>
+            <a
+              href="https://www.facebook.com/profile.php?id=61592475225577"
+              target="_blank"
+              rel="noopener noreferrer"
+              >Hemipt University Institute</a
+            >
+          </div>
         </div>
 
         <!-- Telephone -->
         <div class="contact-item">
-            <div class="contact-icon">📞</div>
-            <div>
-                <h3>Telephone</h3>
-                <p>+237 675 283 496</p>
-            </div>
+          <div class="contact-icon">📞</div>
+          <div>
+            <h3>Telephone</h3>
+            <a href="tel:+237675283496">+237 675 283 496</a>
+          </div>
         </div>
+      </div>
+    </section>
 
-    </div>
-</section>
-
-
-  <footer>
     <footer class="site-footer" id="contact">
-    
-      
-  </footer>
-    <p>© HEMIPT Assistant | Interactive Departments & Programs Guide</p>
-    <p>Student project — verify official information with the school.</p>
-  </footer>
+      <p>© HEMIPT Assistant | Interactive Departments &amp; Programs Guide</p>
+      <p>Student project — verify official information with the school.</p>
+    </footer>
 
-  <script src="script.js"></script>
-</body>
+    <script src="script.js"></script>
+  </body>
 </html>
