@@ -1670,8 +1670,9 @@ function askQuestion(question) {
     // Scroll so the user's question sits at the top of the visible area.
     // The bot reply appears below it — the user scrolls down to read it.
     requestAnimationFrame(() => {
+        const paddingTop = parseInt(getComputedStyle(messagesContainer).paddingTop) || 0;
         messagesContainer.scrollTo({
-            top: userMessage.offsetTop,
+            top: Math.max(0, userMessage.offsetTop - paddingTop),
             behavior: "smooth"
         });
     });

@@ -255,6 +255,7 @@ body {
 }
 
 .chat-messages {
+  position: relative;
   height: 340px;
   overflow-y: auto;
   padding: 20px;
