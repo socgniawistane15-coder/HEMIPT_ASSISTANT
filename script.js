@@ -1623,6 +1623,47 @@ function normalize(text) {
 /* =====================================================
    5. DISPLAY CHAT MESSAGES
    ===================================================== */
+
+// Safely converts URLs, emails and phone numbers in bot responses
+// into clickable <a> elements. Builds DOM nodes — never uses innerHTML.
+function linkify(paragraph, text) {
+    const pattern = /(https?:\/\/[^\s]+)|([\w.+-]+@[\w-]+\.\w+)|(\+\d[\d ]{8,13}\d)/g;
+    let last = 0;
+    let m;
+
+    while ((m = pattern.exec(text)) !== null) {
+        // Plain text before this match
+        if (m.index > last) {
+            paragraph.appendChild(
+                document.createTextNode(text.slice(last, m.index))
+            );
+        }
+
+        const a = document.createElement("a");
+        a.textContent = m[0];
+        a.rel = "noopener noreferrer";
+
+        if (m[1]) {                               // URL
+            a.href = m[1];
+            a.target = "_blank";
+        } else if (m[2]) {                        // email
+            a.href = "mailto:" + m[2];
+        } else {                                  // phone number
+            a.href = "tel:" + m[3].replace(/\s/g, "");
+        }
+
+        paragraph.appendChild(a);
+        last = m.index + m[0].length;
+    }
+
+    // Remaining plain text after the last match
+    if (last < text.length) {
+        paragraph.appendChild(
+            document.createTextNode(text.slice(last))
+        );
+    }
+}
+
 function addMessage(text, sender) {
     const wrapper = document.createElement("div");
     wrapper.className = sender === "user"
@@ -1634,7 +1675,14 @@ function addMessage(text, sender) {
     bubbleWrap.className = "bubble-wrap";
 
     const paragraph = document.createElement("p");
-    paragraph.textContent = text;
+
+    if (sender === "bot") {
+        // Bot messages: linkify URLs, emails and phone numbers
+        linkify(paragraph, text);
+    } else {
+        // User messages: plain text only — never trust user input as markup
+        paragraph.textContent = text;
+    }
 
     // Timestamp
     const timeEl = document.createElement("span");

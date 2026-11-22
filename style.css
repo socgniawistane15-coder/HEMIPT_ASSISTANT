@@ -339,6 +339,17 @@ body {
   border-bottom-left-radius: 4px;
 }
 
+.bot-message p a {
+  color: var(--green-dark);
+  font-weight: 600;
+  text-decoration: underline;
+  word-break: break-all;
+}
+
+.bot-message p a:hover {
+  color: var(--green);
+}
+
 /* Typing indicator */
 .typing-bubble {
   display: flex;
