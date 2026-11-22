@@ -1667,23 +1667,22 @@ function askQuestion(question) {
     typingWrapper.appendChild(typingBubble);
     messagesContainer.appendChild(typingWrapper);
 
-    // Scroll so the user's question sits at the top of the visible area.
-    // The bot reply appears below it — the user scrolls down to read it.
-    requestAnimationFrame(() => {
-        const paddingTop = parseInt(getComputedStyle(messagesContainer).paddingTop) || 0;
-        messagesContainer.scrollTo({
-            top: Math.max(0, userMessage.offsetTop - paddingTop),
-            behavior: "smooth"
-        });
-    });
-
     // 5. After delay, replace indicator with the real answer.
-    //    No forced scroll — the user decides when to read the response.
+    //    Scroll AFTER the response is added — that's when the content
+    //    overflows and there's room to put the question at the top.
     setTimeout(() => {
         messagesContainer.removeChild(typingWrapper);
 
         const answer = findAnswer(text);
         addMessage(answer, "bot");
+
+        requestAnimationFrame(() => {
+            const paddingTop = parseInt(getComputedStyle(messagesContainer).paddingTop) || 0;
+            messagesContainer.scrollTo({
+                top: Math.max(0, userMessage.offsetTop - paddingTop),
+                behavior: "smooth"
+            });
+        });
 
         // Unlock input
         input.disabled = false;
