@@ -31,11 +31,22 @@ global.document = {
   documentElement: { lang: "en" },
   createElement:   (tag) => { const el = mockEl(); el.tag = tag; return el; },
   createTextNode:  (t)   => ({ nodeType: 3, textContent: t }),
+  addEventListener: () => {},
 };
 global.window              = {};
 global.requestAnimationFrame = () => {};
 global.getComputedStyle    = () => ({ paddingTop: "20px" });
 global.navigator           = { clipboard: { writeText: () => Promise.resolve() } };
+global.localStorage        = {
+  _s: {},
+  getItem(k)    { return this._s[k] || null; },
+  setItem(k, v) { this._s[k] = v; },
+  removeItem(k) { delete this._s[k]; },
+};
+global.fetch = () => Promise.resolve({
+  ok:   true,
+  json: () => Promise.resolve({ choices: [{ message: { content: "test" } }] }),
+});
 
 // ---- load script, expose pure functions via global ------------------
 const fs   = require("fs");

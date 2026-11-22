@@ -23,6 +23,32 @@
         <option value="en">English</option>
         <option value="fr">Français</option>
       </select>
+
+      <button
+        id="settings-btn"
+        class="settings-btn"
+        type="button"
+        aria-label="AI Settings"
+        title="AI Settings"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="17"
+          height="17"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <circle cx="12" cy="12" r="3"></circle>
+          <path
+            d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"
+          ></path>
+        </svg>
+      </button>
     </header>
 
     <main class="container">
@@ -111,7 +137,8 @@
         </form>
 
         <p class="chat-footer" id="chat-footer">
-          HEMIPT Student Information Assistant
+          <span id="footer-text">HEMIPT Student Information Assistant</span>
+          <span id="ai-mode-badge" class="ai-mode-badge"></span>
         </p>
       </section>
     </main>
@@ -174,6 +201,92 @@
       <p>© HEMIPT Assistant | Interactive Departments &amp; Programs Guide</p>
       <p>Student project — verify official information with the school.</p>
     </footer>
+
+    <!-- AI Settings modal -->
+    <div
+      id="settings-modal"
+      class="settings-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="settings-title"
+      hidden
+    >
+      <div class="settings-card">
+        <div class="settings-header">
+          <h2 id="settings-title">AI Settings</h2>
+          <button
+            id="settings-close"
+            class="settings-close-btn"
+            type="button"
+            aria-label="Close settings"
+          >
+            &times;
+          </button>
+        </div>
+
+        <p class="settings-desc">
+          Enter your OpenAI API key to enable natural, conversational responses.
+          The key is saved only in this browser.
+        </p>
+
+        <div
+          id="settings-status"
+          class="settings-status"
+          aria-live="polite"
+        ></div>
+
+        <div class="settings-field">
+          <label for="api-key-input">OpenAI API Key</label>
+          <div class="key-input-row">
+            <input
+              type="password"
+              id="api-key-input"
+              placeholder="sk-..."
+              autocomplete="off"
+              spellcheck="false"
+            />
+            <button
+              type="button"
+              id="toggle-key-btn"
+              class="toggle-key-btn"
+              aria-label="Show or hide key"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+                id="eye-icon"
+              >
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="settings-actions">
+          <button type="button" id="save-key-btn" class="btn-save">
+            Save Key
+          </button>
+          <button type="button" id="remove-key-btn" class="btn-remove">
+            Remove Key
+          </button>
+        </div>
+
+        <p class="settings-warning">
+          ⚠ Local testing only — the key is visible in browser storage. For
+          production, switch <code>USE_PROXY = true</code> in
+          <code>script.js</code> and place <code>api.php</code> on your server.
+        </p>
+      </div>
+    </div>
 
     <script src="script.js"></script>
   </body>

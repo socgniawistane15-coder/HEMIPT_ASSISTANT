@@ -698,3 +698,232 @@ footer {
     font-size: 11px;
   }
 }
+
+/* =====================================================
+   SETTINGS BUTTON (navbar)
+   ===================================================== */
+.settings-btn {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: white;
+  color: var(--muted);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+
+.settings-btn:hover {
+  color: var(--green);
+  border-color: var(--green);
+  background: var(--green-light);
+}
+
+/* =====================================================
+   AI MODE BADGE (chat footer)
+   ===================================================== */
+.ai-mode-badge {
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.ai-mode-badge.ai-active {
+  color: var(--green);
+  font-weight: 600;
+}
+
+/* =====================================================
+   SETTINGS MODAL
+   ===================================================== */
+.settings-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.settings-overlay[hidden] { display: none; }
+
+.settings-card {
+  background: white;
+  border-radius: 18px;
+  padding: 28px;
+  width: min(460px, 100%);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.18);
+}
+
+.settings-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.settings-header h2 {
+  font-size: 18px;
+  color: var(--green-dark);
+}
+
+.settings-close-btn {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: white;
+  color: var(--muted);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.settings-close-btn:hover {
+  border-color: var(--green);
+  color: var(--green);
+}
+
+.settings-desc {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.6;
+  margin-bottom: 16px;
+}
+
+.settings-status {
+  min-height: 22px;
+  margin-bottom: 14px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 6px;
+  padding: 0 8px;
+  line-height: 22px;
+}
+
+.settings-status.status-ok {
+  background: var(--green-light);
+  color: var(--green-dark);
+}
+
+.settings-status.status-err {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.settings-field {
+  margin-bottom: 20px;
+}
+
+.settings-field label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 7px;
+  letter-spacing: 0.3px;
+}
+
+.key-input-row {
+  display: flex;
+  gap: 8px;
+}
+
+.key-input-row input {
+  flex: 1;
+  padding: 11px 13px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 13px;
+  font-family: monospace;
+  outline: none;
+  color: var(--ink);
+}
+
+.key-input-row input:focus {
+  border-color: var(--green);
+  box-shadow: 0 0 0 3px #087c4512;
+}
+
+.toggle-key-btn {
+  width: 42px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: white;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.toggle-key-btn:hover {
+  border-color: var(--green);
+  color: var(--green);
+}
+
+.settings-actions {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.btn-save {
+  flex: 1;
+  padding: 11px;
+  border: none;
+  border-radius: 10px;
+  background: var(--green);
+  color: white;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btn-save:hover { background: var(--green-dark); }
+
+.btn-remove {
+  padding: 11px 18px;
+  border: 1px solid #fca5a5;
+  border-radius: 10px;
+  background: white;
+  color: #dc2626;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.btn-remove:hover {
+  background: #fef2f2;
+}
+
+.settings-warning {
+  font-size: 11px;
+  color: #92400e;
+  background: #fffbeb;
+  border: 1px solid #fcd34d;
+  border-radius: 8px;
+  padding: 10px 12px;
+  line-height: 1.6;
+}
+
+.settings-warning code {
+  background: #fef3c7;
+  padding: 1px 4px;
+  border-radius: 4px;
+  font-size: 11px;
+}
+
+@media (max-width: 430px) {
+  .settings-card {
+    padding: 20px 16px;
+  }
+  .settings-actions {
+    flex-direction: column;
+  }
+}
