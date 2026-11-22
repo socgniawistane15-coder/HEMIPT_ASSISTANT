@@ -401,7 +401,11 @@ body {
 .bot-bubble a:hover { color: var(--green); }
 
 /* Markdown table */
-.bot-bubble .md-table {
+.bot-bubble hr {
+  border: none;
+  border-top: 1px solid #c8dece;
+  margin: 10px 0;
+}
   border-collapse: collapse;
   width: 100%;
   margin: 8px 0;

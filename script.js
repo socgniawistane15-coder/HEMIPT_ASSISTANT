@@ -1859,6 +1859,13 @@ function renderMarkdown(container, text) {
         // Any non-pipe line flushes a table in progress
         flushTable();
 
+        // Horizontal rule: --- or *** or ___
+        if (/^[-*_]{3,}$/.test(line)) {
+            flushList(); flushTable();
+            container.appendChild(document.createElement('hr'));
+            continue;
+        }
+
         // Heading: # ## ###
         const hm = line.match(/^#{1,3}\s+(.+)/);
         if (hm) {
