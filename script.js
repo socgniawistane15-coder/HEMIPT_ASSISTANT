@@ -1222,7 +1222,9 @@ const intents = [
     keys: [
       "registration fee", "registration fees", "registration cost",
       "frais inscription", "frais d inscription",
-      "frais inscription hnd", "frais d admission"
+      "frais inscription hnd", "frais d admission",
+      "how much to register", "cost of registration", "registration payment",
+      "combien pour s inscrire", "cout d inscription"
     ]
   },
 
@@ -1233,9 +1235,10 @@ const intents = [
       "where can i pay", "where is the bank", "which bank",
       "payment location", "pay my fees", "pay school fees",
       "how to pay", "bank payment", "payment procedure",
+      "where do i make payment", "where should i pay", "payment method",
       "ou payer", "ou se trouve la banque", "quelle banque",
       "paiement", "payer les frais", "payer la scolarite",
-      "comment payer", "banque"
+      "comment payer", "banque", "mode de paiement", "effectuer un paiement"
     ]
   },
 
@@ -1243,11 +1246,17 @@ const intents = [
     id: "registration",
     keys: [
       "how do i register", "how to register", "how can i register",
-      "registration", "register", "enrol", "enroll",
-      "how to apply", "admission requirements", "required documents",
+      "registration", "register", "enrol", "enroll", "enrolment", "enrollment",
+      "how to apply", "how do i apply", "apply to hemipt", "application",
+      "admission requirements", "required documents", "what documents",
+      "documents required", "how to get in", "admission process",
+      "new student", "i want to register", "i want to enroll",
+      "sign up", "how to sign up", "how do i sign up",
       "comment m inscrire", "comment faire mon inscription",
       "comment s inscrire", "inscription", "inscrire",
-      "documents necessaires", "conditions d admission"
+      "documents necessaires", "conditions d admission",
+      "comment postuler", "dossier d inscription",
+      "pieces a fournir", "nouveau etudiant"
     ]
   },
 
@@ -1256,24 +1265,30 @@ const intents = [
     keys: [
       "school fees", "tuition fees", "tuition",
       "how much are the fees", "how much is school",
-      "how much do i pay", "fee structure", "first instalment",
-      "second instalment", "total tuition", "degree fees",
+      "how much do i pay", "how much does it cost", "how much to study",
+      "how much is the programme", "how much is the program",
+      "cost of studying", "study fees", "academic fees",
+      "fee structure", "first instalment", "second instalment",
+      "total tuition", "degree fees", "annual fees", "yearly fees",
+      "fee for hnd", "hnd fees", "cost", "price", "how much",
       "frais de scolarite", "frais scolaires", "combien coute",
-      "combien coutent", "combien dois je payer",
+      "combien coutent", "combien dois je payer", "combien pour etudier",
       "barreme", "premiere tranche", "deuxieme tranche",
-      "montant de la scolarite", "prix de la formation"
+      "montant de la scolarite", "prix de la formation",
+      "tarif", "cout des etudes"
     ]
   },
 
   {
     id: "degrees",
     keys: [
-      "bachelor degree", "bachelor's degree", "bachelors",
-      "degree programmes", "degree programs", "master programme",
-      "master's degree", "doctoral programme", "doctoral program",
-      "phd", "licence", "licence professionnelle", "master",
+      "bachelor degree", "bachelor's degree", "bachelors", "bsc",
+      "degree programmes", "degree programs", "higher degree",
+      "master programme", "master's degree", "masters", "postgraduate",
+      "doctoral programme", "doctoral program", "phd", "doctorate",
+      "licence", "licence professionnelle", "master",
       "doctorat", "programmes de licence", "programmes de master",
-      "programme doctoral", "diplome universitaire"
+      "programme doctoral", "diplome universitaire", "baccalaureat", "maitrise"
     ]
   },
 
@@ -1282,9 +1297,12 @@ const intents = [
     keys: [
       "vocational", "vocational training", "tailoring",
       "secretariat", "computer maintenance", "cookery",
-      "computerized accounting", "formation professionnelle",
-      "couture", "secretariat", "maintenance informatique",
-      "formation en informatique", "comptabilite informatisee"
+      "computerized accounting", "short course", "skills training",
+      "trade skills", "certificate course", "practical training",
+      "craft", "artisan",
+      "formation professionnelle", "couture", "maintenance informatique",
+      "formation en informatique", "comptabilite informatisee",
+      "formation courte", "formation aux metiers", "formation pratique"
     ]
   },
 
@@ -1292,12 +1310,16 @@ const intents = [
     id: "health",
     keys: [
       "medical and biomedical", "nursing", "nursing assistance",
-      "laboratory technician", "laboratory sciences",
-      "pharmacy technology", "midwifery", "nutrition and dietetics",
+      "nurse", "nursing programme", "nursing program",
+      "laboratory technician", "laboratory sciences", "medical lab",
+      "pharmacy technology", "pharmacy", "pharmacist",
+      "midwifery", "midwife", "nutrition and dietetics",
+      "medicine", "medical", "health science", "biomedical",
       "sciences medicales", "sciences biomedicales",
-      "soins infirmiers", "sage femme", "maieutique",
+      "soins infirmiers", "infirmier", "infirmiere",
+      "sage femme", "maieutique", "pharmacie",
       "nutrition et dietetique", "technologie pharmaceutique",
-      "laboratoire medical"
+      "laboratoire medical", "sciences de la sante"
     ]
   },
 
@@ -1307,8 +1329,12 @@ const intents = [
       "education and communication", "special education",
       "educational management", "journalism", "didactics",
       "teacher grade 1", "education communication",
+      "teacher training", "teaching", "pedagogy",
+      "teaching certificate", "become a teacher",
       "education et communication", "education specialisee",
-      "gestion de l education", "journalisme", "didactique"
+      "gestion de l education", "journalisme", "didactique",
+      "enseignement", "formation des enseignants", "pedagogie",
+      "devenir enseignant"
     ]
   },
 
@@ -1317,11 +1343,14 @@ const intents = [
     keys: [
       "management and business", "management assistant",
       "human resource management", "project management",
-      "accountancy", "banking and finance",
-      "logistics and transport", "gestion etudes commerciales",
-      "assistant de gestion", "ressources humaines",
-      "gestion de projet", "comptabilite", "banque et finance",
-      "logistique et transport"
+      "accountancy", "accounting", "banking and finance",
+      "logistics and transport", "business administration",
+      "hr", "human resources", "marketing", "supply chain",
+      "finance", "business",
+      "gestion etudes commerciales", "assistant de gestion",
+      "ressources humaines", "gestion de projet",
+      "comptabilite", "banque et finance", "logistique et transport",
+      "finance de marche", "administration des affaires"
     ]
   },
 
@@ -1331,9 +1360,12 @@ const intents = [
       "home economics", "tourism and hotel management",
       "bakery and food processing", "fashion and textiles",
       "tourism and travel agency", "hotel management",
-      "catering", "economie familiale", "tourisme",
-      "hotellerie", "boulangerie", "transformation alimentaire",
-      "mode et textile", "agence de voyage", "restauration"
+      "catering", "hospitality", "cooking", "chef",
+      "fashion design", "hotel school", "textile", "food processing",
+      "economie familiale", "tourisme", "hotellerie",
+      "boulangerie", "transformation alimentaire",
+      "mode et textile", "agence de voyage", "restauration",
+      "cuisine", "couture", "gestion hoteliere"
     ]
   },
 
@@ -1342,9 +1374,12 @@ const intents = [
     keys: [
       "agricultural engineering", "crop production",
       "animal production", "agricultural technology",
-      "agro pastoral", "agriculture", "genie agricole",
-      "production vegetale", "production animale",
-      "technologie agricole", "agropastoral"
+      "agro pastoral", "agriculture", "farming", "farm",
+      "crops", "livestock", "agronomy", "agricultural science",
+      "agric",
+      "genie agricole", "production vegetale", "production animale",
+      "technologie agricole", "agropastoral",
+      "agriculture", "elevage", "culture maraichere", "ferme"
     ]
   },
 
@@ -1355,10 +1390,14 @@ const intents = [
       "computer engineering", "civil engineering",
       "electrical engineering", "electronic engineering",
       "graphic and web designing", "petroleum and drilling",
+      "computer science", "it", "software", "web development",
+      "web design", "tech", "coding", "programming",
+      "computer", "electrical", "electronics",
       "genie logiciel", "genie informatique", "genie civil",
       "genie electrique", "genie electronique",
       "conception graphique", "developpement web",
-      "petrole et forage", "ingenierie et technologie"
+      "petrole et forage", "ingenierie et technologie",
+      "informatique", "programmation", "developpement logiciel"
     ]
   },
 
@@ -1366,28 +1405,30 @@ const intents = [
     id: "departments",
     keys: [
       "list all departments", "what are the departments",
-      "which departments", "all specialities",
-      "all specialties", "departments and specialities",
-      "departments and programs", "departments and programmes",
+      "which departments", "all specialities", "all specialties",
+      "departments and specialities", "departments and programs",
+      "departments and programmes", "complete list", "overview of programmes",
+      "everything you offer", "show me all",
       "what programmes does hemipt offer",
       "what programs does hemipt offer",
       "what courses does hemipt offer", "list of departments",
       "quels sont les departements", "liste des departements",
       "departements et specialites", "toutes les filieres",
-      "quelles filieres propose hemipt",
-      "quels programmes propose hemipt"
+      "quelles filieres propose hemipt", "quels programmes propose hemipt",
+      "liste complete", "tout ce que vous proposez"
     ]
   },
 
   {
     id: "programs",
     keys: [
-      "programmes", "programs", "available courses",
-      "courses offered", "specialities", "specialties",
-      "what can i study", "what do you offer",
+      "programmes", "programs", "available courses", "courses offered",
+      "specialities", "specialties", "what can i study",
+      "what can i study here", "what do you offer", "study options",
+      "courses", "subjects", "offered programmes", "available programmes",
       "filiere", "filieres", "formations",
       "quelles formations", "offre de formation",
-      "que puis je etudier"
+      "que puis je etudier", "cours disponibles", "formations disponibles"
     ]
   },
 
@@ -1395,11 +1436,14 @@ const intents = [
     id: "campuses",
     keys: [
       "campus", "campuses", "school location", "school address",
-      "where is the school", "where is hemipt",
+      "where is the school", "where is hemipt", "where exactly is hemipt",
       "where are the campuses", "directions to the school",
+      "address", "directions", "how to find the school",
+      "which city", "which town", "near me",
       "bafoussam", "fundong", "magba", "kumbo", "djemoun",
       "ou se trouve l ecole", "ou se trouve hemipt",
-      "localisation", "adresse de l ecole", "campus de"
+      "localisation", "adresse de l ecole", "campus de",
+      "adresse exacte", "comment y aller", "quelle ville"
     ]
   },
 
@@ -1410,8 +1454,11 @@ const intents = [
       "telephone number", "email address", "school email",
       "school telephone", "school phone", "call the school",
       "how can i contact", "contact details hemipt",
+      "phone", "call", "reach out", "get in touch",
+      "hotline", "contact number", "school number",
       "numero de telephone", "coordonnees", "adresse email",
-      "contacter l ecole", "telephone de l ecole"
+      "contacter l ecole", "telephone de l ecole",
+      "appeler", "joindre", "numero de contact"
     ]
   },
 
@@ -1421,9 +1468,13 @@ const intents = [
       "scholarship", "scholarships", "financial aid",
       "financial assistance", "scholarship application",
       "how to get a scholarship", "50 percent scholarship",
-      "250000 scholarship", "bourse", "bourses",
-      "aide financiere", "demande de bourse",
-      "comment obtenir une bourse"
+      "bursary", "financial help", "help with fees",
+      "fee reduction", "grant", "funding", "financial support",
+      "can i get help with fees", "discount on fees",
+      "bourse", "bourses", "aide financiere",
+      "demande de bourse", "comment obtenir une bourse",
+      "subvention", "aide aux frais", "reduction de frais",
+      "soutien financier"
     ]
   },
 
@@ -1431,7 +1482,9 @@ const intents = [
     id: "library",
     keys: [
       "library", "school library", "where is the library",
-      "bibliotheque", "ou est la bibliotheque"
+      "books", "study room", "reading room", "library access",
+      "bibliotheque", "ou est la bibliotheque",
+      "livres", "salle de lecture", "acces a la bibliotheque"
     ]
   },
 
@@ -1441,8 +1494,11 @@ const intents = [
       "facilities", "school facilities", "school advantages",
       "free wifi", "wi fi", "workshops", "equipment",
       "biomedical centre", "practising centre",
+      "amenities", "infrastructure", "school resources",
+      "what does the school have", "labs",
       "installations", "avantages", "equipements",
-      "wifi gratuit", "centre de pratique biomedicale"
+      "wifi gratuit", "centre de pratique biomedicale",
+      "ressources", "laboratoires"
     ]
   },
 
@@ -1451,19 +1507,24 @@ const intents = [
     keys: [
       "online classes", "physical classes", "sandwich classes",
       "class formats", "nature of classes", "mode of study",
+      "timetable", "schedule", "how are classes held",
+      "distance learning", "blended learning", "study mode",
       "cours en ligne", "cours en presentiel",
-      "types de cours", "format des cours", "formation en sandwich"
+      "types de cours", "format des cours", "formation en sandwich",
+      "emploi du temps", "mode de cours", "apprentissage en ligne"
     ]
   },
 
   {
     id: "duration",
     keys: [
-      "duration", "how long is the training",
+      "duration", "how long is the training", "how long",
       "how many years", "how long does it take",
-      "12 months", "training duration",
+      "12 months", "training duration", "years to study",
+      "length of course", "programme length", "how many semesters",
       "duree de formation", "combien d annees",
-      "duree des etudes", "combien de temps"
+      "duree des etudes", "combien de temps",
+      "longueur de la formation", "nombre d annees"
     ]
   },
 
@@ -1472,7 +1533,9 @@ const intents = [
     keys: [
       "website", "school website", "web address",
       "online registration", "website address",
-      "site web", "site internet", "inscription en ligne"
+      "online", "web portal", "school portal", "internet",
+      "site web", "site internet", "inscription en ligne",
+      "portail", "en ligne"
     ]
   },
 
@@ -1482,9 +1545,12 @@ const intents = [
       "about hemipt", "what is hemipt", "full name",
       "what does hemipt stand for", "university of bamenda",
       "school motto", "school slogan", "affiliation",
+      "tell me about hemipt", "who are you", "what is this school",
+      "hemipt overview", "about the school",
       "a propos de hemipt", "nom complet",
       "que signifie hemipt", "devise de l ecole",
-      "universite de bamenda"
+      "universite de bamenda", "parlez moi de hemipt",
+      "qu est ce que hemipt", "presentation de l ecole"
     ]
   },
 
@@ -1492,7 +1558,8 @@ const intents = [
     id: "greeting",
     keys: [
       "hello", "hi", "good morning", "good afternoon",
-      "good evening", "hey", "bonjour", "bonsoir",
+      "good evening", "good day", "hey", "greetings",
+      "bonjour", "bonsoir", "bonne journee",
       "salut", "coucou"
     ]
   },
@@ -1501,7 +1568,8 @@ const intents = [
     id: "thanks",
     keys: [
       "thank you", "thanks", "thank you very much",
-      "merci", "merci beaucoup"
+      "appreciate it", "much appreciated", "great thanks",
+      "merci", "merci beaucoup", "je vous remercie", "grand merci"
     ]
   }
 ];
@@ -1587,6 +1655,9 @@ function findAnswer(question) {
     return knowledge[currentLanguage].fallback;
   }
 
+  // Words ≥5 chars used for stem matching below
+  const questionWords = cleanQuestion.split(" ").filter(w => w.length >= 5);
+
   let bestIntent = null;
   let bestScore = 0;
 
@@ -1598,23 +1669,37 @@ function findAnswer(question) {
 
       if (!keyword) continue;
 
-      // Exact matches receive the highest score.
+      // 1. Exact full match — highest score
       if (cleanQuestion === keyword) {
         score += 20;
+        continue;
       }
 
-      // Match a keyword or phrase inside the question.
-      else if (
+      // 2. Whole-word / phrase match inside the question
+      if (
         cleanQuestion.includes(" " + keyword + " ") ||
         cleanQuestion.startsWith(keyword + " ") ||
         cleanQuestion.endsWith(" " + keyword)
       ) {
         score += keyword.split(" ").length * 4;
+        continue;
       }
 
-      // Match longer phrases inside a larger question.
-      else if (cleanQuestion.includes(keyword)) {
+      // 3. Keyword appears anywhere inside the question
+      if (cleanQuestion.includes(keyword)) {
         score += keyword.split(" ").length * 3;
+        continue;
+      }
+
+      // 4. Stem matching — single-word keywords ≥5 chars
+      //    Catches plurals and verb forms not listed explicitly.
+      //    e.g. "scholarships" matches keyword "scholarship",
+      //         "registering" matches keyword "regist" prefix
+      if (!keyword.includes(" ") && keyword.length >= 5) {
+        const stem = keyword.substring(0, 5);
+        if (questionWords.some(w => w.substring(0, 5) === stem)) {
+          score += 2;
+        }
       }
     }
 
