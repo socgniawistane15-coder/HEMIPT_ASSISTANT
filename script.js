@@ -1611,8 +1611,8 @@ let conversationHistory = [];    // last N messages sent to OpenAI
 const USE_PROXY   = false;
 const AI_ENDPOINT = USE_PROXY
     ? "./api.php"
-    : "https://api.openai.com/v1/chat/completions";
-const AI_MODEL         = "gpt-4o-mini";
+    : "https://api.groq.com/openai/v1/chat/completions";
+const AI_MODEL         = "llama-3.1-8b-instant";
 const AI_HISTORY_LIMIT = 6;      // last N messages kept for context
 const AI_KEY_STORAGE   = "hemipt_openai_key";
 
@@ -2223,8 +2223,8 @@ clearButton.addEventListener("click", resetChat);
             setStatus("Please enter a valid API key.", "err");
             return;
         }
-        if (!val.startsWith("sk-")) {
-            setStatus("Key should start with sk-", "err");
+        if (!val.startsWith("sk-") && !val.startsWith("gsk_")) {
+            setStatus("Key should start with sk- or gsk_", "err");
             return;
         }
         setApiKey(val);
