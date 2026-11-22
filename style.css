@@ -735,6 +735,16 @@ footer {
   font-weight: 600;
 }
 
+.ai-error-note {
+  font-size: 11px;
+  color: #b45309;
+  background: #fffbeb;
+  border: 1px solid #fcd34d;
+  border-radius: 8px;
+  padding: 6px 12px;
+  margin: 0 20px 8px;
+}
+
 /* =====================================================
    SETTINGS MODAL
    ===================================================== */

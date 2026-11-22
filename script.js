@@ -1980,6 +1980,7 @@ async function askQuestion(question) {
     //    For keyword matching we keep a 1500ms delay so the typing animation
     //    plays; for AI the real network time acts as the natural delay.
     let answer;
+    let aiError = null;
     try {
         if (getApiKey()) {
             answer = await callOpenAI(text);
@@ -1992,7 +1993,8 @@ async function askQuestion(question) {
             });
         }
     } catch (err) {
-        console.warn("AI error — falling back to keyword matching:", err.message);
+        aiError = err.message;
+        console.error("AI call failed:", aiError);
         answer = findAnswer(text);
     }
 
@@ -2002,6 +2004,15 @@ async function askQuestion(question) {
 
     // 7. Replace indicator with the real answer
     messagesContainer.removeChild(typingWrapper);
+
+    // If AI failed, show the error so it's diagnosable
+    if (aiError) {
+        const errNote = document.createElement("p");
+        errNote.className = "ai-error-note";
+        errNote.textContent = "⚠ AI unavailable (" + aiError + ") — showing keyword result.";
+        messagesContainer.appendChild(errNote);
+    }
+
     addMessage(answer, "bot");
 
     requestAnimationFrame(() => {
