@@ -1641,7 +1641,7 @@ function askQuestion(question) {
     if (!text) return;
 
     // 1. Display the user's question
-    addMessage(text, "user");
+    const userMessage = addMessage(text, "user");
 
     // 2. Hide suggestion chips after the first message
     if (!hasMessaged) {
@@ -1666,17 +1666,32 @@ function askQuestion(question) {
 
     typingWrapper.appendChild(typingBubble);
     messagesContainer.appendChild(typingWrapper);
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
 
-    // 5. After delay, replace indicator with the real answer
+    // Scroll so the user's question stays at the top of the visible area.
+    // The bot reply appears below it — the user scrolls down to read it.
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+            const containerTop = messagesContainer.getBoundingClientRect().top;
+            const questionTop  = userMessage.getBoundingClientRect().top;
+            const scrollTo     = messagesContainer.scrollTop
+                                 + questionTop
+                                 - containerTop
+                                 - messagesContainer.clientTop;
+
+            messagesContainer.scrollTo({
+                top: Math.max(0, scrollTo),
+                behavior: "smooth"
+            });
+        });
+    });
+
+    // 5. After delay, replace indicator with the real answer.
+    //    No forced scroll — the user decides when to read the response.
     setTimeout(() => {
         messagesContainer.removeChild(typingWrapper);
 
         const answer = findAnswer(text);
         addMessage(answer, "bot");
-
-        // Scroll to show the bot's reply
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
 
         // Unlock input
         input.disabled = false;
