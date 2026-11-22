@@ -236,11 +236,13 @@ body {
 }
 
 .clear-button {
-  width: 35px;
-  height: 35px;
+  min-width: 52px;
+  padding: 6px 8px;
   margin-left: auto;
-  display: grid;
-  place-items: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
   border: 1px solid var(--border);
   border-radius: 9px;
   background: white;
@@ -252,6 +254,14 @@ body {
 .clear-button:hover {
   background: var(--green-light);
   border-color: var(--green);
+}
+
+.clear-label {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  color: var(--muted);
+  line-height: 1;
 }
 
 .chat-messages {
@@ -276,13 +286,51 @@ body {
 }
 
 .message p {
-  max-width: 92%;
+  max-width: 100%;
   padding: 12px 14px;
   border-radius: 14px;
   font-size: 14px;
   line-height: 1.7;
   white-space: pre-line;
   overflow-wrap: anywhere;
+}
+
+/* Wraps the bubble, timestamp and copy button in a column */
+.bubble-wrap {
+  max-width: 92%;
+  display: flex;
+  flex-direction: column;
+}
+
+.message-time {
+  margin-top: 4px;
+  font-size: 10px;
+  color: var(--muted);
+  opacity: 0.75;
+}
+
+.user-message .message-time { text-align: right; }
+.bot-message  .message-time { text-align: left;  }
+
+.copy-button {
+  display: none;
+  align-self: flex-start;
+  margin-top: 5px;
+  padding: 3px 10px;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  color: var(--muted);
+  font-size: 10px;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.bot-message:hover .copy-button { display: block; }
+
+.copy-button:hover {
+  color: var(--green);
+  border-color: var(--green);
 }
 
 .bot-message p {

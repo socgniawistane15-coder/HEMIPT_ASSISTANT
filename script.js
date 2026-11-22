@@ -1625,20 +1625,47 @@ function normalize(text) {
    ===================================================== */
 function addMessage(text, sender) {
     const wrapper = document.createElement("div");
-
     wrapper.className = sender === "user"
         ? "message user-message"
         : "message bot-message";
 
-    const paragraph = document.createElement("p");
+    // Column wrapper — holds bubble, timestamp and (for bot) copy button
+    const bubbleWrap = document.createElement("div");
+    bubbleWrap.className = "bubble-wrap";
 
-    // Safely display the message
+    const paragraph = document.createElement("p");
     paragraph.textContent = text;
 
-    wrapper.appendChild(paragraph);
+    // Timestamp
+    const timeEl = document.createElement("span");
+    timeEl.className = "message-time";
+    timeEl.textContent = new Date().toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit"
+    });
+
+    bubbleWrap.appendChild(paragraph);
+    bubbleWrap.appendChild(timeEl);
+
+    // Copy button — bot messages only
+    if (sender === "bot") {
+        const copyBtn = document.createElement("button");
+        copyBtn.type = "button";
+        copyBtn.className = "copy-button";
+        copyBtn.textContent = "Copy";
+        copyBtn.addEventListener("click", () => {
+            navigator.clipboard.writeText(text).then(() => {
+                copyBtn.textContent = "Copied!";
+                setTimeout(() => { copyBtn.textContent = "Copy"; }, 1500);
+            });
+        });
+        bubbleWrap.appendChild(copyBtn);
+    }
+
+    wrapper.appendChild(bubbleWrap);
     messagesContainer.appendChild(wrapper);
 
-    // Return the message so askQuestion() can locate it
+    // Return the wrapper so askQuestion() can scroll to it
     return wrapper;
 }
 
