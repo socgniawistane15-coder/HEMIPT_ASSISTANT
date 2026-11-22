@@ -1667,21 +1667,12 @@ function askQuestion(question) {
     typingWrapper.appendChild(typingBubble);
     messagesContainer.appendChild(typingWrapper);
 
-    // Scroll so the user's question stays at the top of the visible area.
+    // Scroll so the user's question sits at the top of the visible area.
     // The bot reply appears below it — the user scrolls down to read it.
     requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-            const containerTop = messagesContainer.getBoundingClientRect().top;
-            const questionTop  = userMessage.getBoundingClientRect().top;
-            const scrollTo     = messagesContainer.scrollTop
-                                 + questionTop
-                                 - containerTop
-                                 - messagesContainer.clientTop;
-
-            messagesContainer.scrollTo({
-                top: Math.max(0, scrollTo),
-                behavior: "smooth"
-            });
+        messagesContainer.scrollTo({
+            top: userMessage.offsetTop,
+            behavior: "smooth"
         });
     });
 
