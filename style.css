@@ -339,6 +339,20 @@ body {
   border-bottom-left-radius: 4px;
 }
 
+/* Avatar shown beside each bot bubble */
+.bot-msg-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: contain;
+  flex-shrink: 0;
+  align-self: flex-start;
+  margin-right: 8px;
+  padding: 2px;
+  background: white;
+  border: 1px solid var(--border);
+}
+
 .bot-message p a {
   color: var(--green-dark);
   font-weight: 600;

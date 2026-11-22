@@ -1710,13 +1710,21 @@ function addMessage(text, sender) {
         bubbleWrap.appendChild(copyBtn);
     }
 
+    // Bot avatar — shown to the left of every bot bubble
+    if (sender === "bot") {
+        const avatar = document.createElement("img");
+        avatar.src = "b.jpg";
+        avatar.alt = "HEMIPT Assistant";
+        avatar.className = "bot-msg-avatar";
+        wrapper.appendChild(avatar);
+    }
+
     wrapper.appendChild(bubbleWrap);
     messagesContainer.appendChild(wrapper);
 
     // Return the wrapper so askQuestion() can scroll to it
     return wrapper;
 }
-
 
 
 /* =====================================================
