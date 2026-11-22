@@ -1835,9 +1835,14 @@ function askQuestion(question) {
     typingWrapper.appendChild(typingBubble);
     messagesContainer.appendChild(typingWrapper);
 
+    // Immediately scroll to the bottom so the typing indicator is visible.
+    // The user can see the animation before the real answer arrives.
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
     // 5. After delay, replace indicator with the real answer.
-    //    Scroll AFTER the response is added — that's when the content
-    //    overflows and there's room to put the question at the top.
+    //    1500ms gives the typing animation enough time to be clearly seen.
+    //    Scroll AFTER the response renders so there is room to position
+    //    the user's question at the top.
     setTimeout(() => {
         messagesContainer.removeChild(typingWrapper);
 
@@ -1856,7 +1861,7 @@ function askQuestion(question) {
         input.disabled = false;
         sendButton.disabled = false;
         input.focus();
-    }, 700);
+    }, 1500);
 }
 
 
