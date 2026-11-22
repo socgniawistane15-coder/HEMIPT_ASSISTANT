@@ -400,6 +400,36 @@ body {
 }
 .bot-bubble a:hover { color: var(--green); }
 
+/* Markdown table */
+.bot-bubble .md-table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 8px 0;
+  font-size: 13px;
+  overflow-x: auto;
+  display: block;
+}
+
+.bot-bubble .md-table th,
+.bot-bubble .md-table td {
+  border: 1px solid #c8dece;
+  padding: 7px 10px;
+  text-align: left;
+  vertical-align: top;
+  line-height: 1.5;
+}
+
+.bot-bubble .md-table th {
+  background: #d4edd9;
+  font-weight: 700;
+  color: var(--green-dark);
+  white-space: nowrap;
+}
+
+.bot-bubble .md-table tbody tr:nth-child(even) {
+  background: #f4faf6;
+}
+
 /* Avatar shown beside each bot bubble */
 .bot-msg-avatar {
   width: 28px;

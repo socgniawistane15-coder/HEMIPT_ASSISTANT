@@ -1764,40 +1764,100 @@ function normalize(text) {
 
 // Parse and render basic Markdown from AI responses into safe DOM nodes.
 // Handles: ### headings, **bold**, *italic*, * / - / • bullets,
-// numbered lists, blank-line paragraph breaks, and linkified URLs.
+// numbered lists, Markdown tables, <br> tags, and blank-line paragraph breaks.
 function renderMarkdown(container, text) {
     const lines = text.split('\n');
-    let listEl   = null;
-    let listType = null;
+    let listEl    = null;
+    let listType  = null;
+    let tableRows = [];   // buffer for consecutive pipe-table lines
 
     function flushList() {
         if (listEl) { container.appendChild(listEl); listEl = null; listType = null; }
     }
 
-    // Convert **bold** and *italic* inline, then linkify the remaining text.
+    // Convert **bold**, *italic*, <br> tags inline, then linkify the rest.
+    // Safe: builds text nodes and elements — never sets innerHTML.
     function inlineFormat(parent, str) {
-        const pattern = /(\*\*(.+?)\*\*|\*([^*\n]+)\*)/g;
-        let last = 0, m;
-        while ((m = pattern.exec(str)) !== null) {
-            if (m.index > last) linkify(parent, str.slice(last, m.index));
-            if (m[2] !== undefined) {
-                const strong = document.createElement('strong');
-                strong.textContent = m[2];
-                parent.appendChild(strong);
-            } else {
-                const em = document.createElement('em');
-                em.textContent = m[3];
-                parent.appendChild(em);
+        // Split on <br> first so we can insert real <br> elements
+        const brParts = str.split(/<br\s*\/?>/gi);
+        brParts.forEach((segment, bi) => {
+            if (bi > 0) parent.appendChild(document.createElement('br'));
+
+            const pattern = /(\*\*(.+?)\*\*|\*([^*\n]+)\*)/g;
+            let last = 0, m;
+            while ((m = pattern.exec(segment)) !== null) {
+                if (m.index > last) linkify(parent, segment.slice(last, m.index));
+                if (m[2] !== undefined) {
+                    const strong = document.createElement('strong');
+                    strong.textContent = m[2];
+                    parent.appendChild(strong);
+                } else {
+                    const em = document.createElement('em');
+                    em.textContent = m[3];
+                    parent.appendChild(em);
+                }
+                last = m.index + m[0].length;
             }
-            last = m.index + m[0].length;
+            if (last < segment.length) linkify(parent, segment.slice(last));
+        });
+    }
+
+    // Render buffered pipe-table rows as a <table>
+    function flushTable() {
+        if (!tableRows.length) return;
+
+        const table = document.createElement('table');
+        table.className = 'md-table';
+        let thead = null, tbody = null, headerDone = false;
+
+        for (const row of tableRows) {
+            // Separator row (|---|---|) → marks end of header
+            if (/^\|[\s\-:|]+\|$/.test(row)) { headerDone = true; continue; }
+
+            const cells = row.slice(1, -1).split('|').map(c => c.trim());
+
+            if (!headerDone) {
+                // First non-separator row is the header
+                thead = document.createElement('thead');
+                const tr = document.createElement('tr');
+                cells.forEach(cell => {
+                    const th = document.createElement('th');
+                    inlineFormat(th, cell);
+                    tr.appendChild(th);
+                });
+                thead.appendChild(tr);
+                table.appendChild(thead);
+                headerDone = true;
+            } else {
+                if (!tbody) { tbody = document.createElement('tbody'); table.appendChild(tbody); }
+                const tr = document.createElement('tr');
+                cells.forEach(cell => {
+                    const td = document.createElement('td');
+                    inlineFormat(td, cell);
+                    tr.appendChild(td);
+                });
+                tbody.appendChild(tr);
+            }
         }
-        if (last < str.length) linkify(parent, str.slice(last));
+
+        if (table.children.length) container.appendChild(table);
+        tableRows = [];
     }
 
     for (const rawLine of lines) {
         const line = rawLine.trim();
 
-        if (!line) { flushList(); continue; } // blank line — spacing via CSS margin
+        if (!line) { flushList(); flushTable(); continue; }
+
+        // Pipe-table row
+        if (line.startsWith('|') && line.endsWith('|')) {
+            flushList();
+            tableRows.push(line);
+            continue;
+        }
+
+        // Any non-pipe line flushes a table in progress
+        flushTable();
 
         // Heading: # ## ###
         const hm = line.match(/^#{1,3}\s+(.+)/);
@@ -1849,6 +1909,7 @@ function renderMarkdown(container, text) {
     }
 
     flushList();
+    flushTable();
 }
 
 // Safely converts URLs, emails and phone numbers in bot responses
