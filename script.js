@@ -1532,6 +1532,7 @@ const infoNote = document.getElementById("info-note");
 const chatFooter = document.getElementById("chat-footer");
 
 let currentLanguage = "en";
+let hasMessaged = false;
 
 
 /* =====================================================
@@ -1640,39 +1641,48 @@ function askQuestion(question) {
     if (!text) return;
 
     // 1. Display the user's question
-    const userMessage = addMessage(text, "user");
+    addMessage(text, "user");
 
-    // 2. Find the correct answer
-    const answer = findAnswer(text);
+    // 2. Hide suggestion chips after the first message
+    if (!hasMessaged) {
+        hasMessaged = true;
+        document.querySelector(".suggestion-area")
+            .classList.add("suggestions-hidden");
+    }
 
-    // 3. Display the chatbot's answer
-    addMessage(answer, "bot");
-
-    // 4. Scroll to the user's question, not the answer
-    requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-            const containerTop =
-                messagesContainer.getBoundingClientRect().top;
-
-            const questionTop =
-                userMessage.getBoundingClientRect().top;
-
-            const scrollPosition =
-                messagesContainer.scrollTop +
-                questionTop -
-                containerTop -
-                messagesContainer.clientTop;
-
-            messagesContainer.scrollTo({
-                top: Math.max(0, scrollPosition),
-                behavior: "smooth"
-            });
-        });
-    });
-
-    // 5. Clear the input and prepare for another question
+    // 3. Lock input while the bot is "typing"
+    input.disabled = true;
+    sendButton.disabled = true;
     input.value = "";
-    input.focus();
+
+    // 4. Show typing indicator
+    const typingWrapper = document.createElement("div");
+    typingWrapper.className = "message bot-message";
+    typingWrapper.setAttribute("aria-hidden", "true");
+
+    const typingBubble = document.createElement("div");
+    typingBubble.className = "typing-bubble";
+    typingBubble.innerHTML = "<span></span><span></span><span></span>";
+
+    typingWrapper.appendChild(typingBubble);
+    messagesContainer.appendChild(typingWrapper);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+    // 5. After delay, replace indicator with the real answer
+    setTimeout(() => {
+        messagesContainer.removeChild(typingWrapper);
+
+        const answer = findAnswer(text);
+        addMessage(answer, "bot");
+
+        // Scroll to show the bot's reply
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+        // Unlock input
+        input.disabled = false;
+        sendButton.disabled = false;
+        input.focus();
+    }, 700);
 }
 
 
@@ -1781,6 +1791,10 @@ languageSelect.addEventListener("change", changeLanguage);
 
 function resetChat() {
   messagesContainer.replaceChildren();
+  hasMessaged = false;
+
+  document.querySelector(".suggestion-area")
+      .classList.remove("suggestions-hidden");
 
   addMessage(
     knowledge[currentLanguage].welcome,
