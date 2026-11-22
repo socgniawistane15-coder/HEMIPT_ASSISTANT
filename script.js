@@ -1600,7 +1600,8 @@ const infoNote = document.getElementById("info-note");
 const chatFooter = document.getElementById("chat-footer");
 
 let currentLanguage = "en";
-let hasMessaged = false;
+let hasMessaged    = false;
+let typingTimeout  = null;   // tracks the pending bot-reply timeout
 
 
 /* =====================================================
@@ -1627,7 +1628,7 @@ function normalize(text) {
 // Safely converts URLs, emails and phone numbers in bot responses
 // into clickable <a> elements. Builds DOM nodes — never uses innerHTML.
 function linkify(paragraph, text) {
-    const pattern = /(https?:\/\/[^\s]+)|([\w.+-]+@[\w-]+\.\w+)|(\+\d[\d ]{8,13}\d)/g;
+    const pattern = /(https?:\/\/[^\s]+)|([\w.+-]+@[\w-]+\.\w+)|(\+\d[\d ]{8,15}\d)/g;
     let last = 0;
     let m;
 
@@ -1700,6 +1701,7 @@ function addMessage(text, sender) {
         const copyBtn = document.createElement("button");
         copyBtn.type = "button";
         copyBtn.className = "copy-button";
+        copyBtn.setAttribute("aria-live", "polite");   // announces "Copied!" to screen readers
         copyBtn.textContent = "Copy";
         copyBtn.addEventListener("click", () => {
             navigator.clipboard.writeText(text).then(() => {
@@ -1714,7 +1716,7 @@ function addMessage(text, sender) {
     if (sender === "bot") {
         const avatar = document.createElement("img");
         avatar.src = "b.jpg";
-        avatar.alt = "HEMIPT Assistant";
+        avatar.alt = "";   // decorative — screen readers should not announce it on every reply
         avatar.className = "bot-msg-avatar";
         wrapper.appendChild(avatar);
     }
@@ -1814,8 +1816,9 @@ function askQuestion(question) {
     // 2. Hide suggestion chips after the first message
     if (!hasMessaged) {
         hasMessaged = true;
-        document.querySelector(".suggestion-area")
-            .classList.add("suggestions-hidden");
+        const area = document.querySelector(".suggestion-area");
+        area.classList.add("suggestions-hidden");
+        area.setAttribute("aria-hidden", "true");
     }
 
     // 3. Lock input while the bot is "typing"
@@ -1843,7 +1846,13 @@ function askQuestion(question) {
     //    1500ms gives the typing animation enough time to be clearly seen.
     //    Scroll AFTER the response renders so there is room to position
     //    the user's question at the top.
-    setTimeout(() => {
+    typingTimeout = setTimeout(() => {
+        typingTimeout = null;
+
+        // Guard: if resetChat() fired during the delay the indicator is
+        // already gone — skip to avoid a NotFoundError.
+        if (!messagesContainer.contains(typingWrapper)) return;
+
         messagesContainer.removeChild(typingWrapper);
 
         const answer = findAnswer(text);
@@ -1961,7 +1970,10 @@ function changeLanguage() {
   renderQuickQuestions();
 }
 
-languageSelect.addEventListener("change", changeLanguage);
+languageSelect.addEventListener("change", function() {
+  changeLanguage();
+  resetChat();   // clear stale messages so the new language starts fresh
+});
 
 
 /* =====================================================
@@ -1969,11 +1981,21 @@ languageSelect.addEventListener("change", changeLanguage);
    ===================================================== */
 
 function resetChat() {
+  // Cancel any pending bot reply to prevent NotFoundError on the
+  // detached typingWrapper, and unlock the input if it was locked.
+  if (typingTimeout) {
+    clearTimeout(typingTimeout);
+    typingTimeout = null;
+  }
+  input.disabled = false;
+  sendButton.disabled = false;
+
   messagesContainer.replaceChildren();
   hasMessaged = false;
 
-  document.querySelector(".suggestion-area")
-      .classList.remove("suggestions-hidden");
+  const area = document.querySelector(".suggestion-area");
+  area.classList.remove("suggestions-hidden");
+  area.removeAttribute("aria-hidden");
 
   addMessage(
     knowledge[currentLanguage].welcome,
