@@ -1612,7 +1612,7 @@ const USE_PROXY   = false;
 const AI_ENDPOINT = USE_PROXY
     ? "./api.php"
     : "https://api.groq.com/openai/v1/chat/completions";
-const AI_MODEL         = "llama-3.1-8b-instant";
+const AI_MODEL         = "mixtral-8x7b-32768";
 const AI_HISTORY_LIMIT = 6;      // last N messages kept for context
 const AI_KEY_STORAGE   = "hemipt_openai_key";
 
