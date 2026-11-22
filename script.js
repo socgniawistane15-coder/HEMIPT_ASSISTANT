@@ -1636,7 +1636,9 @@ function removeApiKey() {
 function updateModeIndicator() {
     const badge = document.getElementById("ai-mode-badge");
     if (!badge) return;
-    if (getApiKey()) {
+    // In proxy mode the key lives on the server — always show AI mode.
+    // In local mode show based on whether a key is saved in the browser.
+    if (USE_PROXY || getApiKey()) {
         badge.textContent = " · AI mode ✦";
         badge.className = "ai-mode-badge ai-active";
     } else {
@@ -2148,7 +2150,7 @@ async function askQuestion(question) {
     let aiError   = null;
     let isAiReply = false;
     try {
-        if (getApiKey()) {
+        if (USE_PROXY || getApiKey()) {
             answer    = await callOpenAI(text);
             isAiReply = true;
         } else {
