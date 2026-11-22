@@ -1762,6 +1762,95 @@ function normalize(text) {
    5. DISPLAY CHAT MESSAGES
    ===================================================== */
 
+// Parse and render basic Markdown from AI responses into safe DOM nodes.
+// Handles: ### headings, **bold**, *italic*, * / - / • bullets,
+// numbered lists, blank-line paragraph breaks, and linkified URLs.
+function renderMarkdown(container, text) {
+    const lines = text.split('\n');
+    let listEl   = null;
+    let listType = null;
+
+    function flushList() {
+        if (listEl) { container.appendChild(listEl); listEl = null; listType = null; }
+    }
+
+    // Convert **bold** and *italic* inline, then linkify the remaining text.
+    function inlineFormat(parent, str) {
+        const pattern = /(\*\*(.+?)\*\*|\*([^*\n]+)\*)/g;
+        let last = 0, m;
+        while ((m = pattern.exec(str)) !== null) {
+            if (m.index > last) linkify(parent, str.slice(last, m.index));
+            if (m[2] !== undefined) {
+                const strong = document.createElement('strong');
+                strong.textContent = m[2];
+                parent.appendChild(strong);
+            } else {
+                const em = document.createElement('em');
+                em.textContent = m[3];
+                parent.appendChild(em);
+            }
+            last = m.index + m[0].length;
+        }
+        if (last < str.length) linkify(parent, str.slice(last));
+    }
+
+    for (const rawLine of lines) {
+        const line = rawLine.trim();
+
+        if (!line) { flushList(); continue; } // blank line — spacing via CSS margin
+
+        // Heading: # ## ###
+        const hm = line.match(/^#{1,3}\s+(.+)/);
+        if (hm) {
+            flushList();
+            const el = document.createElement('p');
+            el.className = 'md-heading';
+            inlineFormat(el, hm[1]);
+            container.appendChild(el);
+            continue;
+        }
+
+        // Bullet list: * - •
+        const bm = line.match(/^[*\-•]\s+(.+)/);
+        if (bm) {
+            if (listType !== 'ul') {
+                flushList();
+                listEl = document.createElement('ul');
+                listEl.className = 'md-list';
+                listType = 'ul';
+            }
+            const li = document.createElement('li');
+            inlineFormat(li, bm[1]);
+            listEl.appendChild(li);
+            continue;
+        }
+
+        // Numbered list: 1. 2. etc.
+        const nm = line.match(/^\d+\.\s+(.+)/);
+        if (nm) {
+            if (listType !== 'ol') {
+                flushList();
+                listEl = document.createElement('ol');
+                listEl.className = 'md-list';
+                listType = 'ol';
+            }
+            const li = document.createElement('li');
+            inlineFormat(li, nm[1]);
+            listEl.appendChild(li);
+            continue;
+        }
+
+        // Regular paragraph
+        flushList();
+        const p = document.createElement('p');
+        p.className = 'md-para';
+        inlineFormat(p, line);
+        container.appendChild(p);
+    }
+
+    flushList();
+}
+
 // Safely converts URLs, emails and phone numbers in bot responses
 // into clickable <a> elements. Builds DOM nodes — never uses innerHTML.
 function linkify(paragraph, text) {
@@ -1802,7 +1891,7 @@ function linkify(paragraph, text) {
     }
 }
 
-function addMessage(text, sender) {
+function addMessage(text, sender, renderMd = false) {
     const wrapper = document.createElement("div");
     wrapper.className = sender === "user"
         ? "message user-message"
@@ -1812,14 +1901,22 @@ function addMessage(text, sender) {
     const bubbleWrap = document.createElement("div");
     bubbleWrap.className = "bubble-wrap";
 
-    const paragraph = document.createElement("p");
-
-    if (sender === "bot") {
-        // Bot messages: linkify URLs, emails and phone numbers
-        linkify(paragraph, text);
+    // AI responses → div.bot-bubble with markdown rendering
+    // Everything else → plain <p> with linkify / textContent
+    let bubble;
+    if (renderMd) {
+        bubble = document.createElement("div");
+        bubble.className = "bot-bubble";
+        renderMarkdown(bubble, text);
     } else {
-        // User messages: plain text only — never trust user input as markup
-        paragraph.textContent = text;
+        bubble = document.createElement("p");
+        if (sender === "bot") {
+            // Bot keyword responses: linkify URLs, emails and phone numbers
+            linkify(bubble, text);
+        } else {
+            // User messages: plain text only — never trust user input as markup
+            bubble.textContent = text;
+        }
     }
 
     // Timestamp
@@ -1830,7 +1927,7 @@ function addMessage(text, sender) {
         minute: "2-digit"
     });
 
-    bubbleWrap.appendChild(paragraph);
+    bubbleWrap.appendChild(bubble);
     bubbleWrap.appendChild(timeEl);
 
     // Copy button — bot messages only
@@ -1980,10 +2077,12 @@ async function askQuestion(question) {
     //    For keyword matching we keep a 1500ms delay so the typing animation
     //    plays; for AI the real network time acts as the natural delay.
     let answer;
-    let aiError = null;
+    let aiError   = null;
+    let isAiReply = false;
     try {
         if (getApiKey()) {
-            answer = await callOpenAI(text);
+            answer    = await callOpenAI(text);
+            isAiReply = true;
         } else {
             answer = await new Promise(resolve => {
                 typingTimeout = setTimeout(() => {
@@ -2013,7 +2112,7 @@ async function askQuestion(question) {
         messagesContainer.appendChild(errNote);
     }
 
-    addMessage(answer, "bot");
+    addMessage(answer, "bot", isAiReply);
 
     requestAnimationFrame(() => {
         const paddingTop = parseInt(getComputedStyle(messagesContainer).paddingTop) || 0;
