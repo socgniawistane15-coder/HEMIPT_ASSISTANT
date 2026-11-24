@@ -1599,16 +1599,155 @@ const suggestionLabel = document.getElementById("suggestion-label");
 const infoNote = document.getElementById("info-note");
 const chatFooter = document.getElementById("chat-footer");
 
-let currentLanguage = "en";
-let hasMessaged    = false;
-let typingTimeout  = null;   // tracks the pending bot-reply timeout
+let currentLanguage    = "en";
+let hasMessaged        = false;
+let typingTimeout      = null;   // tracks the pending bot-reply timeout
+let conversationHistory = [];    // last N messages sent to OpenAI
+
+/* ── OpenAI configuration ────────────────────────────────────
+   LOCAL TESTING  → USE_PROXY = false  (key stored in browser)
+   PRODUCTION     → USE_PROXY = true   (key lives in api.php on server)
+   ──────────────────────────────────────────────────────────── */
+const USE_PROXY   = true;
+const AI_ENDPOINT = USE_PROXY
+    ? "./api.php"
+    : "https://api.groq.com/openai/v1/chat/completions";
+const AI_MODEL         = "openai/gpt-oss-20b";
+const AI_HISTORY_LIMIT = 6;      // last N messages kept for context
+const AI_KEY_STORAGE   = "hemipt_openai_key";
+
+
+/* =====================================================
+   4A. OPENAI HELPERS
+   ===================================================== */
+
+function getApiKey() {
+    return localStorage.getItem(AI_KEY_STORAGE) || "";
+}
+
+function setApiKey(key) {
+    localStorage.setItem(AI_KEY_STORAGE, key.trim());
+}
+
+function removeApiKey() {
+    localStorage.removeItem(AI_KEY_STORAGE);
+}
+
+function updateModeIndicator() {
+    const badge = document.getElementById("ai-mode-badge");
+    if (!badge) return;
+    // In proxy mode the key lives on the server — always show AI mode.
+    // In local mode show based on whether a key is saved in the browser.
+    if (USE_PROXY || getApiKey()) {
+        badge.textContent = " · AI mode ✦";
+        badge.className = "ai-mode-badge ai-active";
+    } else {
+        badge.textContent = " · Local mode";
+        badge.className = "ai-mode-badge";
+    }
+}
+
+// Builds a system prompt from the English knowledge base so the AI stays
+// grounded in real school information and never invents details.
+function buildSystemPrompt() {
+    const k = knowledge.en;
+    return `You are HEMIPT Assistant, the official student guide for HEMS Higher Institute of Professionalism and Technology (HEMIPT) — a university institute in Cameroon, affiliated with the University of Bamenda.
+
+Your role is to help prospective and current students with questions about HEMIPT. Be friendly, warm, and helpful.
+
+RULES:
+- Answer only based on the information provided below.
+- If asked something not covered, say you do not have that detail and suggest contacting the school directly.
+- Respond in the SAME language the user writes in (English or French).
+- For fees and registration, always advise the student to verify with the school office before making any payment.
+- Keep answers clear and well-organised. Use bullet points or numbered lists when helpful.
+- Do not invent information.
+
+SCHOOL INFORMATION:
+${k.about}
+
+${k.departments}
+
+${k.fees}
+
+${k.registration}
+
+${k.registrationFees}
+
+${k.payment}
+
+${k.campuses}
+
+${k.contacts}
+
+${k.scholarship}
+
+${k.facilities}
+
+${k.vocational}
+
+${k.degrees}
+
+${k.duration}
+
+${k.classes}`;
+}
+
+async function callOpenAI(userText) {
+    // Add this message to history
+    conversationHistory.push({ role: "user", content: userText });
+
+    // Keep only the most recent messages to manage token usage
+    if (conversationHistory.length > AI_HISTORY_LIMIT) {
+        conversationHistory = conversationHistory.slice(-AI_HISTORY_LIMIT);
+    }
+
+    const payload = {
+        model: AI_MODEL,
+        messages: [
+            { role: "system", content: buildSystemPrompt() },
+            ...conversationHistory
+        ],
+        max_tokens: 600,
+        temperature: 0.7
+    };
+
+    const headers = { "Content-Type": "application/json" };
+
+    // In local mode (USE_PROXY = false) the key must be in the request header.
+    // In production mode (USE_PROXY = true) the PHP proxy handles authentication.
+    if (!USE_PROXY) {
+        headers["Authorization"] = `Bearer ${getApiKey()}`;
+    }
+
+    const response = await fetch(AI_ENDPOINT, {
+        method: "POST",
+        headers,
+        body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        const msg = err.error?.message || `HTTP ${response.status}`;
+        throw new Error(msg);
+    }
+
+    const data = await response.json();
+    const reply = data.choices?.[0]?.message?.content?.trim();
+
+    if (!reply) throw new Error("Empty response from AI");
+
+    // Store the assistant reply so follow-up questions have context
+    conversationHistory.push({ role: "assistant", content: reply });
+
+    return reply;
+}
 
 
 /* =====================================================
    4. NORMALIZE TEXT
    This handles accents and punctuation.
    ===================================================== */
-
 function normalize(text) {
   return String(text || "")
     .normalize("NFD")
@@ -1624,6 +1763,163 @@ function normalize(text) {
 /* =====================================================
    5. DISPLAY CHAT MESSAGES
    ===================================================== */
+
+// Parse and render basic Markdown from AI responses into safe DOM nodes.
+// Handles: ### headings, **bold**, *italic*, * / - / • bullets,
+// numbered lists, Markdown tables, <br> tags, and blank-line paragraph breaks.
+function renderMarkdown(container, text) {
+    const lines = text.split('\n');
+    let listEl    = null;
+    let listType  = null;
+    let tableRows = [];   // buffer for consecutive pipe-table lines
+
+    function flushList() {
+        if (listEl) { container.appendChild(listEl); listEl = null; listType = null; }
+    }
+
+    // Convert **bold**, *italic*, <br> tags inline, then linkify the rest.
+    // Safe: builds text nodes and elements — never sets innerHTML.
+    function inlineFormat(parent, str) {
+        // Split on <br> first so we can insert real <br> elements
+        const brParts = str.split(/<br\s*\/?>/gi);
+        brParts.forEach((segment, bi) => {
+            if (bi > 0) parent.appendChild(document.createElement('br'));
+
+            const pattern = /(\*\*(.+?)\*\*|\*([^*\n]+)\*)/g;
+            let last = 0, m;
+            while ((m = pattern.exec(segment)) !== null) {
+                if (m.index > last) linkify(parent, segment.slice(last, m.index));
+                if (m[2] !== undefined) {
+                    const strong = document.createElement('strong');
+                    strong.textContent = m[2];
+                    parent.appendChild(strong);
+                } else {
+                    const em = document.createElement('em');
+                    em.textContent = m[3];
+                    parent.appendChild(em);
+                }
+                last = m.index + m[0].length;
+            }
+            if (last < segment.length) linkify(parent, segment.slice(last));
+        });
+    }
+
+    // Render buffered pipe-table rows as a <table>
+    function flushTable() {
+        if (!tableRows.length) return;
+
+        const table = document.createElement('table');
+        table.className = 'md-table';
+        let thead = null, tbody = null, headerDone = false;
+
+        for (const row of tableRows) {
+            // Separator row (|---|---|) → marks end of header
+            if (/^\|[\s\-:|]+\|$/.test(row)) { headerDone = true; continue; }
+
+            const cells = row.slice(1, -1).split('|').map(c => c.trim());
+
+            if (!headerDone) {
+                // First non-separator row is the header
+                thead = document.createElement('thead');
+                const tr = document.createElement('tr');
+                cells.forEach(cell => {
+                    const th = document.createElement('th');
+                    inlineFormat(th, cell);
+                    tr.appendChild(th);
+                });
+                thead.appendChild(tr);
+                table.appendChild(thead);
+                headerDone = true;
+            } else {
+                if (!tbody) { tbody = document.createElement('tbody'); table.appendChild(tbody); }
+                const tr = document.createElement('tr');
+                cells.forEach(cell => {
+                    const td = document.createElement('td');
+                    inlineFormat(td, cell);
+                    tr.appendChild(td);
+                });
+                tbody.appendChild(tr);
+            }
+        }
+
+        if (table.children.length) container.appendChild(table);
+        tableRows = [];
+    }
+
+    for (const rawLine of lines) {
+        const line = rawLine.trim();
+
+        if (!line) { flushList(); flushTable(); continue; }
+
+        // Pipe-table row
+        if (line.startsWith('|') && line.endsWith('|')) {
+            flushList();
+            tableRows.push(line);
+            continue;
+        }
+
+        // Any non-pipe line flushes a table in progress
+        flushTable();
+
+        // Horizontal rule: --- or *** or ___
+        if (/^[-*_]{3,}$/.test(line)) {
+            flushList(); flushTable();
+            container.appendChild(document.createElement('hr'));
+            continue;
+        }
+
+        // Heading: # ## ###
+        const hm = line.match(/^#{1,3}\s+(.+)/);
+        if (hm) {
+            flushList();
+            const el = document.createElement('p');
+            el.className = 'md-heading';
+            inlineFormat(el, hm[1]);
+            container.appendChild(el);
+            continue;
+        }
+
+        // Bullet list: * - •
+        const bm = line.match(/^[*\-•]\s+(.+)/);
+        if (bm) {
+            if (listType !== 'ul') {
+                flushList();
+                listEl = document.createElement('ul');
+                listEl.className = 'md-list';
+                listType = 'ul';
+            }
+            const li = document.createElement('li');
+            inlineFormat(li, bm[1]);
+            listEl.appendChild(li);
+            continue;
+        }
+
+        // Numbered list: 1. 2. etc.
+        const nm = line.match(/^\d+\.\s+(.+)/);
+        if (nm) {
+            if (listType !== 'ol') {
+                flushList();
+                listEl = document.createElement('ol');
+                listEl.className = 'md-list';
+                listType = 'ol';
+            }
+            const li = document.createElement('li');
+            inlineFormat(li, nm[1]);
+            listEl.appendChild(li);
+            continue;
+        }
+
+        // Regular paragraph
+        flushList();
+        const p = document.createElement('p');
+        p.className = 'md-para';
+        inlineFormat(p, line);
+        container.appendChild(p);
+    }
+
+    flushList();
+    flushTable();
+}
 
 // Safely converts URLs, emails and phone numbers in bot responses
 // into clickable <a> elements. Builds DOM nodes — never uses innerHTML.
@@ -1665,7 +1961,7 @@ function linkify(paragraph, text) {
     }
 }
 
-function addMessage(text, sender) {
+function addMessage(text, sender, renderMd = false) {
     const wrapper = document.createElement("div");
     wrapper.className = sender === "user"
         ? "message user-message"
@@ -1675,14 +1971,22 @@ function addMessage(text, sender) {
     const bubbleWrap = document.createElement("div");
     bubbleWrap.className = "bubble-wrap";
 
-    const paragraph = document.createElement("p");
-
-    if (sender === "bot") {
-        // Bot messages: linkify URLs, emails and phone numbers
-        linkify(paragraph, text);
+    // AI responses → div.bot-bubble with markdown rendering
+    // Everything else → plain <p> with linkify / textContent
+    let bubble;
+    if (renderMd) {
+        bubble = document.createElement("div");
+        bubble.className = "bot-bubble";
+        renderMarkdown(bubble, text);
     } else {
-        // User messages: plain text only — never trust user input as markup
-        paragraph.textContent = text;
+        bubble = document.createElement("p");
+        if (sender === "bot") {
+            // Bot keyword responses: linkify URLs, emails and phone numbers
+            linkify(bubble, text);
+        } else {
+            // User messages: plain text only — never trust user input as markup
+            bubble.textContent = text;
+        }
     }
 
     // Timestamp
@@ -1693,7 +1997,7 @@ function addMessage(text, sender) {
         minute: "2-digit"
     });
 
-    bubbleWrap.appendChild(paragraph);
+    bubbleWrap.appendChild(bubble);
     bubbleWrap.appendChild(timeEl);
 
     // Copy button — bot messages only
@@ -1805,7 +2109,7 @@ function findAnswer(question) {
 /* =====================================================
    7. ASK A QUESTION
    ===================================================== */
-function askQuestion(question) {
+async function askQuestion(question) {
     const text = String(question || "").trim();
 
     if (!text) return;
@@ -1821,7 +2125,7 @@ function askQuestion(question) {
         area.setAttribute("aria-hidden", "true");
     }
 
-    // 3. Lock input while the bot is "typing"
+    // 3. Lock input while the bot is responding
     input.disabled = true;
     sendButton.disabled = true;
     input.value = "";
@@ -1837,40 +2141,61 @@ function askQuestion(question) {
 
     typingWrapper.appendChild(typingBubble);
     messagesContainer.appendChild(typingWrapper);
-
-    // Immediately scroll to the bottom so the typing indicator is visible.
-    // The user can see the animation before the real answer arrives.
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
 
-    // 5. After delay, replace indicator with the real answer.
-    //    1500ms gives the typing animation enough time to be clearly seen.
-    //    Scroll AFTER the response renders so there is room to position
-    //    the user's question at the top.
-    typingTimeout = setTimeout(() => {
-        typingTimeout = null;
-
-        // Guard: if resetChat() fired during the delay the indicator is
-        // already gone — skip to avoid a NotFoundError.
-        if (!messagesContainer.contains(typingWrapper)) return;
-
-        messagesContainer.removeChild(typingWrapper);
-
-        const answer = findAnswer(text);
-        addMessage(answer, "bot");
-
-        requestAnimationFrame(() => {
-            const paddingTop = parseInt(getComputedStyle(messagesContainer).paddingTop) || 0;
-            messagesContainer.scrollTo({
-                top: Math.max(0, userMessage.offsetTop - paddingTop),
-                behavior: "smooth"
+    // 5. Get the answer — AI if key is configured, keyword matching otherwise.
+    //    For keyword matching we keep a 1500ms delay so the typing animation
+    //    plays; for AI the real network time acts as the natural delay.
+    let answer;
+    let aiError   = null;
+    let isAiReply = false;
+    try {
+        if (USE_PROXY || getApiKey()) {
+            answer    = await callOpenAI(text);
+            isAiReply = true;
+        } else {
+            answer = await new Promise(resolve => {
+                typingTimeout = setTimeout(() => {
+                    typingTimeout = null;
+                    resolve(findAnswer(text));
+                }, 1500);
             });
-        });
+        }
+    } catch (err) {
+        aiError = err.message;
+        console.error("AI call failed:", aiError);
+        answer = findAnswer(text);
+    }
 
-        // Unlock input
-        input.disabled = false;
-        sendButton.disabled = false;
-        input.focus();
-    }, 1500);
+    // 6. Guard: if resetChat() fired while we were waiting, the indicator
+    //    has been removed and the input is already unlocked — just bail.
+    if (!messagesContainer.contains(typingWrapper)) return;
+
+    // 7. Replace indicator with the real answer
+    messagesContainer.removeChild(typingWrapper);
+
+    // If AI failed, show the error so it's diagnosable
+    if (aiError) {
+        const errNote = document.createElement("p");
+        errNote.className = "ai-error-note";
+        errNote.textContent = "⚠ AI unavailable (" + aiError + ") — showing keyword result.";
+        messagesContainer.appendChild(errNote);
+    }
+
+    addMessage(answer, "bot", isAiReply);
+
+    requestAnimationFrame(() => {
+        const paddingTop = parseInt(getComputedStyle(messagesContainer).paddingTop) || 0;
+        messagesContainer.scrollTo({
+            top: Math.max(0, userMessage.offsetTop - paddingTop),
+            behavior: "smooth"
+        });
+    });
+
+    // 8. Unlock input
+    input.disabled = false;
+    sendButton.disabled = false;
+    input.focus();
 }
 
 
@@ -1964,7 +2289,7 @@ function changeLanguage() {
   sendButton.textContent = data.send;
   suggestionLabel.textContent = data.tryAsking;
   infoNote.textContent = data.notice;
-  chatFooter.textContent = data.footer;
+  document.getElementById("footer-text").textContent = data.footer;
 
   renderTopics();
   renderQuickQuestions();
@@ -1981,14 +2306,16 @@ languageSelect.addEventListener("change", function() {
    ===================================================== */
 
 function resetChat() {
-  // Cancel any pending bot reply to prevent NotFoundError on the
-  // detached typingWrapper, and unlock the input if it was locked.
+  // Cancel any pending keyword-matching timeout and unlock the input
   if (typingTimeout) {
     clearTimeout(typingTimeout);
     typingTimeout = null;
   }
   input.disabled = false;
   sendButton.disabled = false;
+
+  // Clear conversation history so the next chat starts fresh
+  conversationHistory = [];
 
   messagesContainer.replaceChildren();
   hasMessaged = false;
@@ -2007,12 +2334,92 @@ clearButton.addEventListener("click", resetChat);
 
 
 /* =====================================================
-   13. START THE CHATBOT
+   13. SETTINGS MODAL
+   ===================================================== */
+
+(function initSettings() {
+    const modal      = document.getElementById("settings-modal");
+    const openBtn    = document.getElementById("settings-btn");
+    const closeBtn   = document.getElementById("settings-close");
+    const keyInput   = document.getElementById("api-key-input");
+    const toggleBtn  = document.getElementById("toggle-key-btn");
+    const saveBtn    = document.getElementById("save-key-btn");
+    const removeBtn  = document.getElementById("remove-key-btn");
+    const statusEl   = document.getElementById("settings-status");
+
+    function openModal() {
+        const existing = getApiKey();
+        keyInput.value = existing
+            ? existing.slice(0, 4) + "…" + existing.slice(-4)
+            : "";
+        setStatus("", "");
+        modal.removeAttribute("hidden");
+        keyInput.focus();
+    }
+
+    function closeModal() {
+        modal.setAttribute("hidden", "");
+        keyInput.value = "";
+    }
+
+    function setStatus(msg, type) {
+        statusEl.textContent = msg;
+        statusEl.className = "settings-status" + (type ? " status-" + type : "");
+    }
+
+    openBtn.addEventListener("click", openModal);
+    closeBtn.addEventListener("click", closeModal);
+
+    // Close on backdrop click
+    modal.addEventListener("click", (e) => {
+        if (e.target === modal) closeModal();
+    });
+
+    // Close on Escape
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && !modal.hasAttribute("hidden")) closeModal();
+    });
+
+    // Show / hide key
+    toggleBtn.addEventListener("click", () => {
+        const isHidden = keyInput.type === "password";
+        keyInput.type = isHidden ? "text" : "password";
+    });
+
+    saveBtn.addEventListener("click", () => {
+        const val = keyInput.value.trim();
+        if (!val || val.includes("…")) {
+            setStatus("Please enter a valid API key.", "err");
+            return;
+        }
+        if (!val.startsWith("sk-") && !val.startsWith("gsk_")) {
+            setStatus("Key should start with sk- or gsk_", "err");
+            return;
+        }
+        setApiKey(val);
+        updateModeIndicator();
+        setStatus("Key saved — AI mode is now active.", "ok");
+        setTimeout(closeModal, 1200);
+    });
+
+    removeBtn.addEventListener("click", () => {
+        removeApiKey();
+        conversationHistory = [];
+        updateModeIndicator();
+        keyInput.value = "";
+        setStatus("Key removed — switched to Local mode.", "ok");
+    });
+})();
+
+
+/* =====================================================
+   14. START THE CHATBOT
    ===================================================== */
 
 function startChatbot() {
   changeLanguage();
   resetChat();
+  updateModeIndicator();
 }
 
 startChatbot();
